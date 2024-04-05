@@ -2,19 +2,27 @@ class ExpenseReportsController < ApplicationController
   skip_before_action :verify_authenticity_token
   def index
     @expense_report = ExpenseReport.all
-    render json: { message: 'Expense reports retrieved successfully', expense_reports: @expense_reports }
+    #render json: { message: 'Expense reports retrieved successfully', expense_reports: @expense_reports }
   end
-  def show
-    user = Employee.find_by(id: params[:user_id])
-    authorize user, policy_class: ExpenseReportPolicy
 
-    @expense_reports = if policy(user).show?
-                          user.admin_status ? ExpenseReport.all : user.expense_reports
-                        else
-                          []
-                        end
-    render json: @expense_reports
+  #SHOW
+  def show
+    begin
+      user = Employee.find_by(id: params[:user_id])
+      authorize user, policy_class: ExpenseReportPolicy
+
+      @expense_reports = if policy(user).show?
+                            user.admin_status ? ExpenseReport.all : user.expense_reports
+                          else
+                            []
+                          end
+      render json: @expense_reports
+    rescue Pundit::NotDefinedError => e
+      render json: { message: 'Non identified employee' }, status: :internal_server_error
+    end
   end
+
+  #CREATE
   def create
     employee = Employee.find_by(id: params[:employee_id])
 
@@ -31,6 +39,7 @@ class ExpenseReportsController < ApplicationController
     end
   end
 
+  #DELETE
   def destroy
     user = Employee.find_by(id: params[:user_id])
     Current.current_user = user
@@ -44,16 +53,26 @@ class ExpenseReportsController < ApplicationController
     end
   end
 
+  #UPDATE
   def update
     user = Employee.find_by(id: params[:user_id])
     Current.current_user = user
-    expense_report = ExpenseReport.find(params[:expense_report_id])
-    authorize expense_report, :update?
 
-    if expense_report.update(expense_report_params)
-      render json: expense_report
-    else
-      render json: { errors: expense_report.errors.full_messages }, status: :unprocessable_entity
+    begin
+      expense_report = ExpenseReport.find(params[:expense_report_id])
+      authorize expense_report, :update?
+
+      if expense_report.update(expense_report_params)
+        render json: expense_report
+      else
+        render json: { errors: expense_report.errors.full_messages }, status: :unprocessable_entity
+      end
+    rescue Pundit::NotAuthorizedError => e
+      render json: { message: 'Not authorized to update this expense report' }, status: :unauthorized
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { message: 'Expense report not found' }, status: :not_found
+    rescue StandardError => e
+      render json: { message: e.message }, status: :internal_server_error
     end
   end
 

@@ -4,17 +4,24 @@ skip_before_action :verify_authenticity_token
   def index
     expense = Expense.group(params[:expense_group_id])
   end
+
+  #SHOW
   def show
     user = Employee.find_by(id: params[:user_id])
     Current.current_user = user
     authorize user
+
     expense_report = ExpenseReport.find_by(id: params[:expense_report_id])
-    if user.admin_status || (expense_report && user.id == expense_report.employee_id)
+    if expense_report.nil?
+      render json: { message: 'Expense report not found' }, status: :not_found
+    elsif user.admin_status || user.id == expense_report.employee_id
       render json: expense_report.expenses
     else
       render json: { message: 'Unauthorized' }, status: :unauthorized
     end
   end
+
+  #CREATE
   def create
     @employee = Employee.find(params[:employee_id])
     @expense_report = @employee.expense_reports.find(params[:expense_report_id])
@@ -36,6 +43,7 @@ skip_before_action :verify_authenticity_token
   render json: { message: 'Expense report not found or unauthorized action.' }, status: :not_found
   end
 
+  #UPDATE
   def update
     user = Employee.find_by(id: params[:user_id])
     Current.current_user = user
@@ -88,20 +96,20 @@ skip_before_action :verify_authenticity_token
 
 private
 def validate_invoice(invoice_no)
-api_key = 'b490bb80'
-url = 'https://my.api.mockaroo.com/invoices.json'
-uri = URI(url)
-http = Net::HTTP.new(uri.host, uri.port)
-http.use_ssl = true
-request = Net::HTTP::Post.new(uri.path)
-request['X-API-Key'] = api_key
-request.body = { 'invoice_id': invoice_no }.to_json
-response = http.request(request)
-response.code == '200' && JSON.parse(response.body)["status"] == true
-rescue StandardError => e
-puts "Error validating invoice: #{e.message}"
-false
-end
+  api_key = 'b490bb80'
+  url = 'https://my.api.mockaroo.com/invoices.json'
+  uri = URI(url)
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  request = Net::HTTP::Post.new(uri.path)
+  request['X-API-Key'] = api_key
+  request.body = { 'invoice_id': invoice_no }.to_json
+  response = http.request(request)
+  response.code == '200' && JSON.parse(response.body)["status"] == true
+  rescue StandardError => e
+    puts "Error validating invoice: #{e.message}"
+    false
+  end
 private
 def expense_params
   params.permit(:employee_id, :expense_report_id, :invoice_no, :date, :description, :amount, :approval_status)

@@ -3,9 +3,9 @@ class EmployeesController < ApplicationController
 
 	def index
 	  @employees = Employee.all
-	  render json: @employees
+	  #render json: @employees
 	end
-
+	#SHOW
 	def show
 	  user = Employee.find_by(id: params[:user_id])
 	  Current.current_user = user
@@ -25,27 +25,45 @@ class EmployeesController < ApplicationController
 		end
 	  end
 	end
-
-	def update
-	  employee = Employee.find_by(id: params[:employee_id])
-	  if employee
-		employee.update(emp_status: 'terminated')
-		render json: employee
-	  else
-		render json: { message: 'Employee not found' }, status: :not_found
+	#show profile
+	# employees_controller.rb
+	def details
+		@employee = Employee.includes(expense_reports: :expenses).find_by(id: params[:user_id])
+		if @employee.nil?
+		  render json: { message: 'Employee not found' }, status: :not_found
+		else
+		  render json: @employee, include: { expense_reports: { include: :expenses } }
+		end
 	  end
-	end
 
+
+
+	#CREATE
 	def create
-	  employee = Employee.new(employee_params)
-	  if employee.valid?
-		employee.save!
-		render json: employee
-	  else
-		render json: { details: employee.errors.full_messages }, status: :unprocessable_entity
-	  end
+		employee = Employee.new(employee_params)
+		if employee.valid?
+		  employee.save!
+		  render json: employee
+		else
+		  render json: { message: 'Employee not found with id' }, status: :unprocessable_entity
+		end
 	end
 
+	#UPDATE
+	def update
+		employee = Employee.find_by(id: params[:employee_id])
+		if employee
+		  if employee.update(employee_params)
+			render json: employee
+		  else
+			render json: { message: 'Failed to update employee', errors: employee.errors.full_messages }, status: :unprocessable_entity
+		  end
+		else
+		  render json: { message: 'Employee not found' }, status: :not_found
+		end
+	  end
+
+	#DELETE
 	def destroy
 	  user = Employee.find_by(id: params[:user_id])
 	  Current.current_user = user
@@ -67,7 +85,6 @@ class EmployeesController < ApplicationController
 	end
 
 	private
-
 	def employee_params
 	  params.require(:employee).permit(:name, :email, :department, :admin_status, :emp_status)
 	end
