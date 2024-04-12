@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_04_02_063026) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_12_104110) do
   create_table "comments", force: :cascade do |t|
     t.text "content"
     t.integer "expense_id", null: false
@@ -39,6 +39,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_02_063026) do
     t.integer "employee_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "report_status"
     t.index ["employee_id"], name: "index_expense_reports_on_employee_id"
   end
 
@@ -49,10 +50,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_02_063026) do
     t.integer "invoice_no"
     t.string "approval_status"
     t.integer "expense_report_id", null: false
-    t.integer "employee_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["employee_id"], name: "index_expenses_on_employee_id"
     t.index ["expense_report_id"], name: "index_expenses_on_expense_report_id"
   end
 
@@ -71,7 +70,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_02_063026) do
 
   add_foreign_key "comments", "expenses"
   add_foreign_key "expense_reports", "employees"
-  add_foreign_key "expenses", "employees"
   add_foreign_key "expenses", "expense_reports"
   add_foreign_key "replies", "comments"
 end

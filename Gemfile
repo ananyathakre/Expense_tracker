@@ -31,6 +31,10 @@ gem "bootsnap", require: false
 gem "httparty"
 gem "pundit"
 gem "faraday"
+group :development, :test do
+  gem 'rspec-rails', '~> 5.0'
+end
+
 
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
