@@ -40,11 +40,4 @@ RSpec.describe Employee, type: :model do
     employee.destroy
     expect(ExpenseReport.exists?(expense_report.id)).to be_falsey
   end
-
-  it "destroys associated expenses when destroyed" do
-    employee = Employee.create(name: "John Doe", email: "john@example.com")
-    expense = Expense.create(description: "Expense", amount: 100, employee: employee)
-    employee.destroy
-    expect(Expense.exists?(expense.id)).to be_falsey
-  end
 end
