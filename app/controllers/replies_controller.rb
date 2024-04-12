@@ -24,6 +24,6 @@ class RepliesController < ApplicationController
 
   private
   def reply_params
-      params.permit(:comment_id, :replies)
+      params.permit(:comment_id, :content)
   end
 end
