@@ -1,0 +1,12 @@
+# app/views/expense_report_mailer/notify_approval.html.erb
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Expense Report Approval Notification</title>
+</head>
+<body>
+  <h1>Your expense report has been <%= @expense_report.report_status.downcase %>!</h1>
+  <p>Applied Amount: <%= @applied_amount %></p>
+  <p>Approved Amount: <%= @approved_amount %></p>
+</body>
+</html>
