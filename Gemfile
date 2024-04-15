@@ -31,6 +31,9 @@ gem "bootsnap", require: false
 gem "httparty"
 gem "pundit"
 gem "faraday"
+# Gemfile
+gem 'factory_bot_rails'
+
 group :development, :test do
   gem 'rspec-rails', '~> 5.0'
 end
